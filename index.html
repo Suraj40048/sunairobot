@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>SUNAIROBOT — Solar Panel Cleaning Robots</title>
+<meta name="description" content="SUNAIROBOT engineers solar panel cleaning robots across three tiers: Lift & Shift, Semi-Automatic, and Fully Automatic.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-0:#070a0d;
+    --bg-1:#0d131a;
+    --panel:#111a23;
+    --panel-line:#22323f;
+    --gold:#f5a623;
+    --gold-soft:#f5c877;
+    --cyan:#33e1ed;
+    --cyan-soft:#7ff2fa;
+    --text-0:#eef2f5;
+    --text-1:#a9b6c2;
+    --text-2:#6b7883;
+    --danger-line: rgba(245,166,35,0.35);
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg-0);
+    color:var(--text-0);
+    font-family:'Inter', sans-serif;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  ::selection{ background:var(--gold); color:#0a0d10; }
+
+  a{ color:inherit; }
+
+  /* ---------- DNA CANVAS BACKGROUND ---------- */
+  #dna-canvas{
+    position:fixed;
+    inset:0;
+    width:100vw;
+    height:100vh;
+    z-index:0;
+    display:block;
+  }
+  .grain{
+    position:fixed;
+    inset:0;
+    z-index:1;
+    pointer-events:none;
+    opacity:0.035;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .vignette{
+    position:fixed; inset:0; z-index:1; pointer-events:none;
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(7,10,13,0) 0%, rgba(7,10,13,0.35) 60%, rgba(7,10,13,0.9) 100%),
+      linear-gradient(180deg, rgba(7,10,13,0.15) 0%, rgba(7,10,13,0) 12%, rgba(7,10,13,0) 82%, rgba(7,10,13,0.95) 100%);
+  }
+
+  /* ---------- LAYOUT SHELL ---------- */
+  .content{ position:relative; z-index:2; }
+  .wrap{ max-width:1200px; margin:0 auto; padding:0 28px; }
+
+  header.nav{
+    position:fixed; top:0; left:0; right:0; z-index:20;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:20px 28px;
+    backdrop-filter:blur(10px);
+    background:linear-gradient(180deg, rgba(7,10,13,0.75), rgba(7,10,13,0));
+  }
+  .brand{
+    display:flex; align-items:center; gap:10px;
+    font-family:'Orbitron', sans-serif;
+    font-weight:800;
+    letter-spacing:0.06em;
+    font-size:18px;
+    color:var(--text-0);
+  }
+  .brand .dot{
+    width:9px;height:9px;border-radius:50%;
+    background:var(--gold);
+    box-shadow:0 0 12px 3px rgba(245,166,35,0.65);
+  }
+  nav.links{ display:flex; gap:34px; font-family:'Rajdhani',sans-serif; font-weight:600; letter-spacing:0.05em; font-size:15px; text-transform:uppercase; color:var(--text-1); }
+  nav.links a{ text-decoration:none; transition:color .25s ease; position:relative; }
+  nav.links a:hover{ color:var(--gold-soft); }
+  .nav-cta{
+    font-family:'Rajdhani',sans-serif; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; font-size:14px;
+    padding:10px 20px; border-radius:2px;
+    border:1px solid var(--gold);
+    color:var(--gold-soft);
+    text-decoration:none;
+    transition:all .25s ease;
+    white-space:nowrap;
+  }
+  .nav-cta:hover{ background:var(--gold); color:#0a0d10; }
+  .menu-btn{ display:none; }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    padding-top:120px;
+    padding-bottom:80px;
+  }
+  .eyebrow{
+    font-family:'Space Mono', monospace;
+    font-size:12.5px;
+    letter-spacing:0.28em;
+    text-transform:uppercase;
+    color:var(--cyan-soft);
+    display:flex; align-items:center; gap:12px;
+    margin-bottom:26px;
+  }
+  .eyebrow::before{
+    content:''; width:34px; height:1px; background:var(--cyan-soft); opacity:0.7;
+  }
+  h1.hero-title{
+    font-family:'Orbitron', sans-serif;
+    font-weight:900;
+    font-size:clamp(2.6rem, 8vw, 6.4rem);
+    line-height:0.98;
+    letter-spacing:0.01em;
+    margin:0;
+    background:linear-gradient(100deg, #ffffff 10%, var(--gold-soft) 55%, var(--gold) 80%);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    max-width:16ch;
+  }
+  .hero-sub{
+    font-family:'Rajdhani', sans-serif;
+    font-weight:500;
+    font-size:clamp(1.05rem, 2vw, 1.4rem);
+    color:var(--text-1);
+    max-width:640px;
+    margin:26px 0 0;
+    line-height:1.55;
+  }
+  .hero-actions{
+    display:flex; gap:18px; margin-top:44px; flex-wrap:wrap;
+  }
+  .btn-primary, .btn-secondary{
+    font-family:'Rajdhani',sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; font-size:15.5px;
+    padding:16px 32px; border-radius:2px; text-decoration:none; transition:all .25s ease;
+    display:inline-flex; align-items:center; gap:10px;
+  }
+  .btn-primary{ background:var(--gold); color:#0a0d10; }
+  .btn-primary:hover{ background:var(--gold-soft); transform:translateY(-2px); box-shadow:0 8px 24px rgba(245,166,35,0.25); }
+  .btn-secondary{ border:1px solid var(--panel-line); color:var(--text-0); }
+  .btn-secondary:hover{ border-color:var(--cyan); color:var(--cyan-soft); }
+
+  .hero-stats{
+    margin-top:88px;
+    display:grid; grid-template-columns:repeat(4,1fr);
+    gap:1px;
+    background:var(--panel-line);
+    border:1px solid var(--panel-line);
+    max-width:840px;
+  }
+  .hero-stats div{
+    background:rgba(13,19,26,0.65);
+    padding:20px 18px;
+  }
+  .stat-num{
+    font-family:'Orbitron',sans-serif; font-weight:700; font-size:1.7rem; color:var(--cyan-soft);
+  }
+  .stat-label{
+    font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-2); margin-top:6px;
+  }
+
+  /* ---------- SECTION GENERIC ---------- */
+  section{ position:relative; padding:120px 0; }
+  .section-head{ max-width:680px; margin-bottom:64px; }
+  .section-eyebrow{
+    font-family:'Space Mono', monospace; font-size:12px; letter-spacing:0.25em; text-transform:uppercase; color:var(--gold-soft);
+    margin-bottom:16px; display:block;
+  }
+  h2.section-title{
+    font-family:'Orbitron', sans-serif; font-weight:800; font-size:clamp(1.8rem,4vw,2.9rem);
+    margin:0 0 18px; line-height:1.1; color:var(--text-0);
+  }
+  .section-desc{
+    font-family:'Rajdhani',sans-serif; font-size:1.15rem; color:var(--text-1); line-height:1.6; font-weight:500;
+  }
+
+  /* ---------- PROBLEM STRIP ---------- */
+  .problem{ padding:80px 0; border-top:1px solid var(--panel-line); border-bottom:1px solid var(--panel-line); }
+  .problem-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:44px; }
+  .problem-item{ }
+  .problem-item .pnum{ font-family:'Space Mono',monospace; color:var(--text-2); font-size:13px; margin-bottom:14px; }
+  .problem-item h3{ font-family:'Rajdhani',sans-serif; font-weight:700; font-size:1.35rem; margin:0 0 10px; color:var(--text-0); }
+  .problem-item p{ font-family:'Inter',sans-serif; font-size:0.95rem; color:var(--text-1); line-height:1.6; margin:0; }
+
+  /* ---------- PRODUCT TIERS ---------- */
+  .tiers{ }
+  .tier-list{ display:flex; flex-direction:column; gap:2px; border-top:1px solid var(--panel-line); }
+  .tier{
+    display:grid;
+    grid-template-columns: 120px 1fr 320px;
+    gap:40px;
+    padding:52px 0;
+    border-bottom:1px solid var(--panel-line);
+    position:relative;
+    transition:background .3s ease;
+  }
+  .tier:hover{ background:linear-gradient(90deg, rgba(245,166,35,0.04), rgba(51,225,237,0.02)); }
+  .tier-index{
+    font-family:'Orbitron',sans-serif; font-weight:800; font-size:2.6rem; color:var(--panel-line);
+    -webkit-text-stroke:1px var(--panel-line);
+    transition:color .3s ease;
+  }
+  .tier:hover .tier-index{ color:transparent; -webkit-text-stroke:1px var(--gold); }
+  .tier-body h3{
+    font-family:'Rajdhani',sans-serif; font-weight:700; font-size:1.7rem; margin:0 0 6px; color:var(--text-0);
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  }
+  .tier-tag{
+    font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.1em; text-transform:uppercase;
+    padding:5px 10px; border:1px solid var(--panel-line); border-radius:2px; color:var(--cyan-soft);
+  }
+  .tier-body p.tier-desc{
+    font-family:'Inter',sans-serif; color:var(--text-1); line-height:1.65; max-width:56ch; margin:14px 0 22px; font-size:0.98rem;
+  }
+  .tier-features{ list-style:none; padding:0; margin:0; display:grid; grid-template-columns:repeat(2,1fr); gap:10px 24px; }
+  .tier-features li{
+    font-family:'Rajdhani',sans-serif; font-weight:600; font-size:0.95rem; color:var(--text-1);
+    display:flex; align-items:baseline; gap:10px;
+  }
+  .tier-features li::before{ content:'—'; color:var(--gold-soft); }
+  .tier-spec{
+    background:var(--panel); border:1px solid var(--panel-line); padding:26px;
+    align-self:start;
+  }
+  .tier-spec-row{ display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px dashed var(--panel-line); font-family:'Space Mono',monospace; font-size:12.5px; }
+  .tier-spec-row:last-child{ border-bottom:none; }
+  .tier-spec-row span:first-child{ color:var(--text-2); text-transform:uppercase; letter-spacing:0.05em; }
+  .tier-spec-row span:last-child{ color:var(--cyan-soft); }
+  .tier-cta{ margin-top:18px; display:inline-block; font-family:'Rajdhani',sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; font-size:13.5px; color:var(--gold-soft); text-decoration:none; border-bottom:1px solid var(--gold-soft); padding-bottom:2px; }
+
+  /* ---------- WHY / FEATURES ---------- */
+  .why-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--panel-line); border:1px solid var(--panel-line); }
+  .why-card{ background:var(--bg-1); padding:36px 28px; }
+  .why-card .wi{ width:38px; height:38px; margin-bottom:22px; color:var(--gold); }
+  .why-card h4{ font-family:'Rajdhani',sans-serif; font-weight:700; font-size:1.15rem; margin:0 0 10px; color:var(--text-0); }
+  .why-card p{ font-family:'Inter',sans-serif; font-size:0.9rem; color:var(--text-1); line-height:1.6; margin:0; }
+
+  /* ---------- PROCESS ---------- */
+  .process-row{ display:flex; gap:0; overflow-x:auto; margin-top:10px; padding-bottom:12px; }
+  .process-step{ flex:1 0 220px; padding:28px 26px; border-left:1px solid var(--panel-line); position:relative; }
+  .process-step:first-child{ border-left:none; }
+  .process-step .pn{ font-family:'Space Mono',monospace; color:var(--cyan-soft); font-size:12px; }
+  .process-step h5{ font-family:'Rajdhani',sans-serif; font-weight:700; font-size:1.05rem; margin:12px 0 8px; color:var(--text-0); }
+  .process-step p{ font-family:'Inter',sans-serif; font-size:0.88rem; color:var(--text-1); line-height:1.55; margin:0; }
+
+  /* ---------- CTA BAND ---------- */
+  .cta-band{
+    border-top:1px solid var(--panel-line);
+    text-align:center;
+    padding:130px 0;
+  }
+  .cta-band h2{
+    font-family:'Orbitron',sans-serif; font-weight:800; font-size:clamp(1.9rem,5vw,3.3rem); margin:0 0 22px;
+  }
+  .cta-band p{ font-family:'Rajdhani',sans-serif; color:var(--text-1); font-size:1.15rem; max-width:560px; margin:0 auto 40px; }
+
+  /* ---------- FOOTER ---------- */
+  footer{ border-top:1px solid var(--panel-line); padding:60px 0 40px; }
+  .footer-grid{ display:grid; grid-template-columns:1.4fr 1fr 1fr 1fr; gap:40px; margin-bottom:56px; }
+  .footer-brand{ font-family:'Orbitron',sans-serif; font-weight:800; font-size:20px; margin-bottom:16px; }
+  .footer-grid p{ font-family:'Inter',sans-serif; color:var(--text-2); font-size:0.9rem; line-height:1.6; max-width:32ch; }
+  .footer-col h6{ font-family:'Space Mono',monospace; text-transform:uppercase; font-size:11.5px; letter-spacing:0.15em; color:var(--text-2); margin:0 0 18px; }
+  .footer-col a{ display:block; font-family:'Rajdhani',sans-serif; font-weight:600; font-size:0.98rem; color:var(--text-1); text-decoration:none; margin-bottom:12px; transition:color .2s ease; }
+  .footer-col a:hover{ color:var(--gold-soft); }
+  .footer-bottom{ display:flex; justify-content:space-between; align-items:center; padding-top:28px; border-top:1px solid var(--panel-line); font-family:'Space Mono',monospace; font-size:11.5px; color:var(--text-2); flex-wrap:wrap; gap:14px; }
+
+  /* ---------- REVEAL ANIMATION ---------- */
+  .reveal{ opacity:0; transform:translateY(28px); transition:opacity .8s ease, transform .8s ease; }
+  .reveal.in{ opacity:1; transform:translateY(0); }
+
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+    .reveal{ opacity:1; transform:none; transition:none; }
+  }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width:1080px){
+    .tier{ grid-template-columns:90px 1fr; }
+    .tier-spec{ grid-column:1 / -1; margin-top:10px; max-width:420px; }
+    .why-grid{ grid-template-columns:repeat(2,1fr); }
+    .footer-grid{ grid-template-columns:1fr 1fr; }
+  }
+  @media (max-width:860px){
+    nav.links{ display:none; }
+    .hero-stats{ grid-template-columns:repeat(2,1fr); max-width:100%; }
+    .problem-grid{ grid-template-columns:1fr; gap:36px; }
+  }
+  @media (max-width:640px){
+    header.nav{ padding:16px 20px; }
+    .wrap{ padding:0 20px; }
+    .hero{ padding-top:100px; }
+    .tier{ grid-template-columns:1fr; padding:38px 0; gap:18px; }
+    .tier-index{ font-size:2rem; }
+    .tier-features{ grid-template-columns:1fr; }
+    .why-grid{ grid-template-columns:1fr; }
+    .footer-grid{ grid-template-columns:1fr; gap:32px; }
+    .footer-bottom{ flex-direction:column; align-items:flex-start; }
+    section{ padding:80px 0; }
+    .cta-band{ padding:90px 0; }
+    .nav-cta{ padding:9px 14px; font-size:12.5px; }
+    .brand{ font-size:15px; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="dna-canvas"></canvas>
+<div class="vignette"></div>
+<div class="grain"></div>
+
+<div class="content">
+
+  <header class="nav">
+    <div class="brand"><span class="dot"></span>SUNAIROBOT</div>
+    <nav class="links">
+      <a href="#products">Robots</a>
+      <a href="#why">Why Us</a>
+      <a href="#process">Process</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <a class="nav-cta" href="#contact">Request a Demo</a>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero wrap">
+    <div class="eyebrow">Robotics for solar O&amp;M</div>
+    <h1 class="hero-title">Dust is the<br>only thing<br>standing between<br>your panels and full yield.</h1>
+    <p class="hero-sub">SUNAIROBOT builds waterless cleaning robots for solar farms and rooftops — three tiers of automation, one goal: every panel producing at its true capacity, every single day.</p>
+    <div class="hero-actions">
+      <a href="#products" class="btn-primary">Explore the Robots →</a>
+      <a href="#contact" class="btn-secondary">Talk to an Engineer</a>
+    </div>
+    <div class="hero-stats reveal">
+      <div><div class="stat-num">99.9%</div><div class="stat-label">Panels waterless clean</div></div>
+      <div><div class="stat-num">25%</div><div class="stat-label">Avg. yield recovered</div></div>
+      <div><div class="stat-num">3</div><div class="stat-label">Automation tiers</div></div>
+      <div><div class="stat-num">24/7</div><div class="stat-label">Autonomous ops</div></div>
+
+    </div>
+  </section>
+
+  <!-- PROBLEM STRIP -->
+  <section class="problem wrap reveal">
+    <div class="problem-grid">
+      <div class="problem-item">
+        <div class="pnum">Loss</div>
+        <h3>Soiling eats output silently</h3>
+        <p>Dust, pollen and bird-drop buildup can cut panel output by up to 30% — with no alarm, no alert, just quietly falling revenue.</p>
+      </div>
+      <div class="problem-item">
+        <div class="pnum">Cost</div>
+        <h3>Manual washing doesn't scale</h3>
+        <p>Water trucks, ladders and labour crews are expensive, water-hungry, and slow across megawatt-scale sites.</p>
+      </div>
+      <div class="problem-item">
+        <div class="pnum">Risk</div>
+        <h3>Rooftops and gantries are dangerous</h3>
+        <p>Working at height on hot glass is a safety liability. Robots remove people from the risk entirely.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRODUCTS -->
+  <section id="products" class="tiers wrap">
+    <div class="section-head reveal">
+      <span class="section-eyebrow">The Lineup</span>
+      <h2 class="section-title">Three tiers of automation. One clean sheet of glass.</h2>
+      <p class="section-desc">Every site is different — a small rooftop, a mid-size ground mount, a sprawling utility farm. SUNAIROBOT's tiers scale automation to match the site, the budget, and the crew.</p>
+    </div>
+
+    <div class="tier-list">
+      <div class="tier reveal">
+        <div class="tier-index">01</div>
+        <div class="tier-body">
+          <h3>Lift &amp; Shift <span class="tier-tag">Manual-Guided</span></h3>
+          <p class="tier-desc">A lightweight cleaning unit that technician lifts and shifts from panel row to row by hand. Built for small rooftops and low-density installs where a full robotic rail isn't justified yet.</p>
+          <ul class="tier-features">
+            <li>Dry PBT material + brush cleaning</li>
+            <li>Lightweight, Two-person operation</li>
+            <li>No fixed rail installation needed</li>
+            <li>Lowest entry cost in the lineup</li>
+          </ul>
+        </div>
+        <div class="tier-spec">
+          <div class="tier-spec-row"><span>Automation</span><span>Manual</span></div>
+          <div class="tier-spec-row"><span>Best for</span><span>Rooftop / small arrays</span></div>
+          <div class="tier-spec-row"><span>Water use</span><span>Dry / low-water</span></div>
+          <div class="tier-spec-row"><span>Crew</span><span>1 operator + 1 helper</span></div>
+          <a href="#contact" class="tier-cta">Request Spec Sheet →</a>
+        </div>
+      </div>
+
+      <div class="tier reveal">
+        <div class="tier-index">02</div>
+        <div class="tier-body">
+          <h3>Semi-Automatic <span class="tier-tag">Rail-Assisted</span></h3>
+          <p class="tier-desc">A motorised cleaning head that rides a mounted Panel boarder & bridges across each row, controlled and repositioned by an operator between rows. Balances speed and cost for mid-size ground-mount plants.</p>
+          <ul class="tier-features">
+            <li>Motorised brush &amp; rail-guided motion</li>
+            <li>Two operator covers multiple rows</li>
+            <li>Faster coverage than manual units</li>
+            <li>Modular Bridges & Binders kit fits most panel layouts</li>
+          </ul>
+        </div>
+        <div class="tier-spec">
+          <div class="tier-spec-row"><span>Automation</span><span>Semi-automatic</span></div>
+          <div class="tier-spec-row"><span>Best for</span><span>Mid-size ground mount</span></div>
+          <div class="tier-spec-row"><span>Water use</span><span>Waterless option</span></div>
+          <div class="tier-spec-row"><span>Crew</span><span>1 operator / block</span></div>
+          <a href="#contact" class="tier-cta">Request Spec Sheet →</a>
+        </div>
+      </div>
+
+      <div class="tier reveal">
+        <div class="tier-index">03</div>
+        <div class="tier-body">
+          <h3>Fully Automatic <span class="tier-tag">Autonomous</span></h3>
+          <p class="tier-desc">A self-driving robot fleet that docks, schedules, and cleans entire solar farms on its own — sensor-guided (additional saftey sensors, app-monitored, and built for utility-scale sites that can't spare a crew.</p>
+          <ul class="tier-features">
+            <li>Autonomous scheduling &amp; docking</li>
+            <li>Sensor-based obstacle avoidance</li>
+            <li>Remote monitoring dashboard</li>
+            <li>Zero on-site crew required</li>
+          </ul>
+        </div>
+        <div class="tier-spec">
+          <div class="tier-spec-row"><span>Automation</span><span>Fully autonomous</span></div>
+          <div class="tier-spec-row"><span>Best for</span><span>Utility-scale farms</span></div>
+          <div class="tier-spec-row"><span>Water use</span><span>Waterless</span></div>
+          <div class="tier-spec-row"><span>Crew</span><span>Remote-monitored</span></div>
+          <a href="#contact" class="tier-cta">Request Spec Sheet →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHY US -->
+  <section id="why" class="wrap">
+    <div class="section-head reveal">
+      <span class="section-eyebrow">Why SUNAIROBOT</span>
+      <h2 class="section-title">Engineered for glass, dust and sun — not repurposed from somewhere else.</h2>
+    </div>
+    <div class="why-grid reveal">
+      <div class="why-card">
+        <svg class="wi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/><circle cx="12" cy="12" r="4"/></svg>
+        <h4>Waterless cleaning</h4>
+        <p>Every tier can run dry-clean cycles, saving thousands of litres per megawatt each year.</p>
+      </div>
+      <div class="why-card">
+        <svg class="wi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="14" rx="1"/><path d="M8 21h8M12 18v3"/></svg>
+        <h4>Live monitoring</h4>
+        <p>Semi and fully automatic units report cleaning cycles and panel health to one dashboard.</p>
+      </div>
+      <div class="why-card">
+        <svg class="wi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 12l6 6L20 6"/></svg>
+        <h4>Panel-safe brushes</h4>
+        <p>Soft microfiber and controlled pressure prevent micro-scratching across every robot in the lineup.</p>
+      </div>
+      <div class="why-card">
+        <svg class="wi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3l8 4v5c0 5-3.5 7.5-8 9-4.5-1.5-8-4-8-9V7z"/></svg>
+        <h4>Built for the field</h4>
+        <p>Dust-sealed, heat-rated components tested for long hours under direct sun.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROCESS -->
+  <section id="process" class="wrap">
+    <div class="section-head reveal">
+      <span class="section-eyebrow">Getting Started</span>
+      <h2 class="section-title">From site survey to autonomous cleaning</h2>
+    </div>
+    <div class="process-row reveal">
+      <div class="process-step">
+        <div class="pn">Step 1</div>
+        <h5>Site survey</h5>
+        <p>We map panel layout, soiling levels and access constraints to size the right tier.</p>
+      </div>
+      <div class="process-step">
+        <div class="pn">Step 2</div>
+        <h5>Tier match</h5>
+        <p>Lift &amp; Shift, Semi-Automatic, or Fully Automatic — matched to scale and budget.</p>
+      </div>
+      <div class="process-step">
+        <div class="pn">Step 3</div>
+        <h5>Install &amp; calibrate</h5>
+        <p>Our team installs rails or docking stations and tunes cleaning cycles to your site.</p>
+      </div>
+      <div class="process-step">
+        <div class="pn">Step 4</div>
+        <h5>Monitor &amp; scale</h5>
+        <p>Track yield recovery from day one, then expand automation as the site grows.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section id="contact" class="cta-band wrap reveal">
+    <h2>Ready to stop losing yield to dust?</h2>
+    <p>Tell us about your site and we'll recommend the right SUNAIROBOT tier — no obligation, just numbers.</p>
+    <div class="hero-actions" style="justify-content:center;">
+      <a href="mailto:sales@sunairobot.com" class="btn-primary">Request a Demo →</a>
+      <a href="tel:+917887294592" class="btn-secondary">Call Sales</a>
+    </div>
+  </section>
+
+  <footer class="wrap">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand">SUNAIROBOT</div>
+        <p>Solar panel cleaning robots across three tiers of automation — built for rooftops, ground mounts and utility-scale farms.</p>
+      </div>
+      <div class="footer-col">
+        <h6>Robots</h6>
+        <a href="#products">Lift &amp; Shift</a>
+        <a href="#products">Semi-Automatic</a>
+        <a href="#products">Fully Automatic</a>
+      </div>
+      <div class="footer-col">
+        <h6>Company</h6>
+        <a href="#why">Why Us</a>
+        <a href="#process">Process</a>
+        <a href="#contact">Contact</a>
+      </div>
+      <div class="footer-col">
+        <h6>Contact</h6>
+        <a href="mailto:sales@sunairobot.com">sales@sunairobot.com</a>
+        <a href="tel:+917887294592">+917887294592</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 SUNAIROBOT. All rights reserved.</span>
+      <span>Engineered for solar. Built for scale.</span>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+/* ---------------- DNA HELIX CANVAS ---------------- */
+(function(){
+  const canvas = document.getElementById('dna-canvas');
+  const ctx = canvas.getContext('2d');
+  let w, h, dpr;
+  let particles = [];
+  let scrollOffset = 0;
+  let mouseX = 0, targetTilt = 0, currentTilt = 0;
+
+  const GOLD = '245,166,35';
+  const CYAN = '51,225,237';
+
+  function resize(){
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    w = window.innerWidth;
+    h = window.innerHeight;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    buildStrand();
+  }
+
+  function buildStrand(){
+    particles = [];
+    // number of "rungs" scales with viewport height so it always fills the screen
+    const spacing = Math.max(26, Math.min(46, h/22));
+    const count = Math.ceil(h / spacing) + 6;
+    const amplitude = Math.min(w * 0.34, 340);
+    for(let i=0;i<count;i++){
+      particles.push({ y: i*spacing, amp: amplitude });
+    }
+  }
+
+  function draw(time){
+    ctx.clearRect(0,0,w,h);
+
+    const t = time * 0.00035;
+    const centerX = w/2 + currentTilt;
+    const period = 5.6; // vertical distance for one full twist
+
+    // draw connecting rungs + strand nodes
+    for(let i=0;i<particles.length;i++){
+      const p = particles[i];
+      const yPos = ((p.y + scrollOffset) % (h + 80)) - 40;
+      const phase = (yPos / (h/period)) * Math.PI*2 + t*6;
+
+      const x1 = centerX + Math.sin(phase) * p.amp;
+      const x2 = centerX + Math.sin(phase + Math.PI) * p.amp;
+      const z1 = Math.cos(phase); // depth -1..1
+      const z2 = Math.cos(phase + Math.PI);
+
+      const r1 = 3.6 + z1*2.4;
+      const r2 = 3.6 + z2*2.4;
+      const o1 = 0.35 + (z1+1)/2 * 0.65;
+      const o2 = 0.35 + (z2+1)/2 * 0.65;
+
+      // rung connecting the two strands (skip every other for airiness)
+      if(i % 2 === 0){
+        const rungOpacity = 0.12 + (Math.max(z1,z2)+1)/2*0.18;
+        ctx.strokeStyle = `rgba(${CYAN}, ${rungOpacity})`;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x1, yPos);
+        ctx.lineTo(x2, yPos);
+        ctx.stroke();
+      }
+
+      // node 1 (gold strand)
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(${GOLD}, ${o1})`;
+      ctx.shadowColor = `rgba(${GOLD}, ${o1*0.8})`;
+      ctx.shadowBlur = z1 > 0.3 ? 14 : 0;
+      ctx.arc(x1, yPos, Math.max(r1,0.6), 0, Math.PI*2);
+      ctx.fill();
+
+      // node 2 (cyan strand)
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(${CYAN}, ${o2})`;
+      ctx.shadowColor = `rgba(${CYAN}, ${o2*0.8})`;
+      ctx.shadowBlur = z2 > 0.3 ? 14 : 0;
+      ctx.arc(x2, yPos, Math.max(r2,0.6), 0, Math.PI*2);
+      ctx.fill();
+
+      ctx.shadowBlur = 0;
+
+      // faint connective line along each strand to the next node
+      if(i>0){
+        const prev = particles[i-1];
+        const prevY = ((prev.y + scrollOffset) % (h+80)) - 40;
+        if(prevY < yPos){
+          const prevPhase = (prevY / (h/period)) * Math.PI*2 + t*6;
+          const px1 = centerX + Math.sin(prevPhase) * prev.amp;
+          const px2 = centerX + Math.sin(prevPhase + Math.PI) * prev.amp;
+
+          ctx.strokeStyle = `rgba(${GOLD}, ${0.18})`;
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.moveTo(px1, prevY);
+          ctx.lineTo(x1, yPos);
+          ctx.stroke();
+
+          ctx.strokeStyle = `rgba(${CYAN}, ${0.18})`;
+          ctx.beginPath();
+          ctx.moveTo(px2, prevY);
+          ctx.lineTo(x2, yPos);
+          ctx.stroke();
+        }
+      }
+    }
+
+    scrollOffset += 0.55;
+    currentTilt += (targetTilt - currentTilt) * 0.04;
+
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', resize);
+  window.addEventListener('mousemove', (e)=>{
+    targetTilt = (e.clientX / window.innerWidth - 0.5) * 60;
+  });
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  resize();
+  if(!reduceMotion){
+    requestAnimationFrame(draw);
+  } else {
+    draw(0);
+  }
+})();
+
+/* ---------------- SCROLL REVEAL ---------------- */
+(function(){
+  const els = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        entry.target.classList.add('in');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  els.forEach(el=>io.observe(el));
+})();
+</script>
+
+</body>
+</html>
